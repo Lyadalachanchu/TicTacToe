@@ -1,12 +1,273 @@
-
 <!DOCTYPE html>
 <html>
-<head>
-<title>Page Title</title>
+	<head>
+		<title>P5.js Example</title>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.5.14/p5.js"></script>
+		<script>
+			let board = [
+  ['', '', '',''],
+  ['', '', '',''],
+  ['', '', '',''],
+  ['', '', '','']
+];
+let counter = 0;
+let player1 = 'X';
+let player2 = 'O';
+let players = [player1, player2];
+let currentPlayer;
+let available = [];
+let x_pos;
+let y_pos;
+let turn = 0;
 
-</head>
-<body>
+function setup() {
+  createCanvas(600, 600);
+  currentPlayer = players[floor(random(players.length))];
+  for(let i=0; i<4;i++){
+    for(let j=0;j<4;j++){
+      available.push([i, j]);
+    }
+  }
+}
 
-<iframe style="width: 640px; height: 600px; overflow: hidden;"  scrolling="no" frameborder="0" src="https://editor.p5js.org/lyadalachanchu/embed/61KJXHX9b"></iframe>
-</body>
+
+function nextTurn(){
+  if (currentPlayer == player1){
+    if(turn>2){
+      console.log("Playing smart");
+      let bestScore = -Infinity;
+      let move;
+      for (let i = 0; i < 4; i++) {
+        for (let j = 0; j <4; j++) {
+          // Is the spot available?
+          if (board[i][j] == '') {
+            board[i][j] = player1;
+            let score = minimax(board, 0, false);
+            board[i][j] = '';
+            if (score > bestScore) {
+              bestScore = score;
+              move = { i, j };
+            }
+          }
+        }
+      }
+
+      board[move.i][move.j] = player1;
+      currentPlayer = player2;
+      turn++;
+
+    }
+    else{
+      let index =null;
+    while(available[index] == null){
+      index =  floor(random(available.length));
+      if((available.every(element => element === null))){
+         break;
+         }
+    }
+    let spot = available[index];
+    let i = spot[0];
+    let j = spot[1];
+    board[i][j] = currentPlayer;
+    available[index] = null;
+    currentPlayer = player2;
+    }
+  }
+  else{
+    let k = floor(x_pos/150);
+    let l = floor(y_pos/150);
+    available[(4*(l)+k+1)-1] = null;
+    board[l][k] = currentPlayer;
+    currentPlayer = player1;
+    turn++;
+    console.log(turn);
+  }
+}
+let scores = {
+  X: 10,
+  O: -10,
+  tie: 0
+};
+
+function minimax(board, depth, isMaximizing) {
+
+  let result = checkWinner();
+  if (result !== null) {
+    return scores[result];
+  }
+
+  if (isMaximizing) {
+    let bestScore = -Infinity;
+    for (let i = 0; i < 4; i++) {
+      for (let j = 0; j < 4; j++) {
+        // Is the spot available?
+        if (board[i][j] == '') {
+          board[i][j] = player1;
+          let score = minimax(board, depth + 1, false);
+          board[i][j] = '';
+          bestScore = max(score, bestScore);
+        }
+      }
+    }
+    return bestScore;
+  } else {
+    let bestScore = Infinity;
+    for (let i = 0; i < 4; i++) {
+      for (let j = 0; j < 4; j++) {
+        // Is the spot available?
+        if (board[i][j] == '') {
+          board[i][j] = player2;
+          let score = minimax(board, depth + 1, true);
+          board[i][j] = '';
+          bestScore = min(score, bestScore);
+        }
+      }
+    }
+    return bestScore;
+  }
+}
+
+function mouseClicked(){
+  x_pos = mouseX;
+  y_pos = mouseY;
+  nextTurn();
+}
+
+function checkWinner(){
+  let winner = null;
+  
+  for(let i = 0; i<4; i++){
+    if(board[i][0] == board[i][1] && board[i][1] == board[i][2] &&board[i][2] == board[i][3] && board[i][0]!=""){
+      return board[i][0];
+    }else if(board[0][i] == board[1][i] && board[1][i] == board[2][i] &&board[1][i] == board[3][i] && board[0][i]!=""){
+      return board[0][i];
+    }
+    
+
+  }
+  if(board[0][0] == board[1][1] && board [1][1] == board[2][2] &&board [2][2] == board[3][3] &&  board[0][0]!=""){
+    return board[0][0]
+  }else if (board[3][0]==board[2][1] && board[2][1] == board[1][2] && board[1][2] == board[0][3] && board[3][0]!=""){
+    return board[3][0]
+  }
+  
+  for(let x = 1; x<=2;x++){
+    for (let y = 0; y<4;y++){
+      if(board[y][x] == board[y][x-1]&&board[y][x] == board[y][x+1]&&board[y][x]!=''){
+        return otherPlayerWon(board[y][x]);
+      }
+    }
+  }
+  
+  for(let x = 0;x<4;x++){
+    for(let y = 1; y<=2;y++){
+      if(board[y][x] == board[y-1][x]&& board[y][x] == board[y+1][x]&&board[y][x]!=''){
+        return otherPlayerWon(board[y][x]);
+      }
+    }
+  }/*
+  if(board[1][0] == board[0][0] && board[1][0] == board[2][0]&& board[1][0]!=''){
+    return otherPlayerWon(board[1][0]);
+  }
+  if(board[2][0] == board[1][0] && board[2][0] == board[3][0]&& board[2][0]!=''){
+    return otherPlayerWon(board[2][0]);
+  }*/
+  if(board[1][1] == board[0][0] && board[1][1] == board[2][2]&&board[1][1]!=''){
+    return otherPlayerWon(board[0][0]);
+  }
+  if(board[2][2] == board[1][1] && board[2][2] == board[3][3]&&board[2][2]!=''){
+    return otherPlayerWon(board[3][3]);
+  }
+  if(board[2][1] == board[3][0]&&board[2][1] == board[1][2]&&board[2][1]!=''){
+    return otherPlayerWon(board[2][1]);
+  }
+  if(board[1][2] == board[2][1]&&board[1][2] == board[0][3]&&board[2][1]!=''){
+    return otherPlayerWon(board[1][2]);
+  }
+  if(board[2][0] == board[1][1]&& board[1][1] == board[0][2]&&board[1][1]!=''){
+    return otherPlayerWon(board[1][1]);
+  }
+  if(board[3][1] == board[2][2]&&board[2][2] == board[1][3]&&board[2][2]!=''){
+    return otherPlayerWon(board[2][2]);
+  }
+  if(board[0][1] == board[1][2]&&board[1][2]==board[2][3]&&board[1][2]!=''){
+    return otherPlayerWon(board[1][2]);
+  }
+  if(board[1][0] == board[2][1]&&board[2][1] == board[3][2]&&board[2][1]!=''){
+     return otherPlayerWon(board[2][1]);
+     }
+    if (winner == null && !board[0].includes("")&&!board[1].includes("")&&!board[2].includes("")&&!board[3].includes("")) {
+    return 'tie';
+  } 
+  
+  else {
+    return winner;
+  }
+
+}
+function otherPlayerWon(currPlayer){
+  if(currPlayer == "X"){
+    return 'O';
+  }
+  else if(currPlayer == 'O'){
+    return "X";
+  }
+}
+
+
+
+function draw() {
+  background(220);
+  let w = width/4;
+  let h = height/4;
+  
+  line(w,0,w,h*4);
+  line(2*w,0,2*w,h*4);
+  line(3*w,0,3*w,h*4);
+  
+  line(0,h, w*4, h);
+  line(0, h*2, w*4, h*2);
+  line(0, h*3, w*4, h*3);
+  for(let i=0; i<4;i++){
+    for(let j=0;j<4;j++){
+      let spot = board[i][j];
+      x = w*j;
+      y = h*i;
+      if( spot == player2){
+        noFill();
+        ellipse(x+w/2,y+h/2,w);
+      }
+      else if(spot == player1){
+        xr = w;
+        line(x, y, x+xr, y+xr);
+        line(x, y+xr, x+xr, y);
+      }
+      
+    }
+  }
+
+  let res = checkWinner();
+  if(res != null){
+    noLoop()
+    if (res == 'tie') {
+      document.getElementById("Winner").innerHTML = "It's a tie!";
+    } else {
+       document.getElementById("Winner").innerHTML = res+" won!";
+    }
+  }
+  
+}
+
+
+
+		</script>
+	</head>
+	<body>
+    <h1>TicTacNo</h1>
+    <div id="sketch-div"></div>
+    <p>Get 4 in a row. Don't get 3 in a row</h1>
+    <p id="Winner"></p>
+    <p id="Prediction"></p>
+    <p id="Thinking"></p>
+	</body>
 </html>
