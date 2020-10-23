@@ -22,7 +22,8 @@ let turn = 0;
 
 function setup() {
   createCanvas(600, 600);
-  currentPlayer = players[floor(random(players.length))];
+  //currentPlayer = players[floor(random(players.length))];
+  currentPlayer = players[1];
   for(let i=0; i<4;i++){
     for(let j=0;j<4;j++){
       available.push([i, j]);
@@ -33,7 +34,7 @@ function setup() {
 
 function nextTurn(){
   if (currentPlayer == player1){
-    if(turn>2){
+    if(turn>1){
       console.log("Playing smart");
       let bestScore = -Infinity;
       let move;
@@ -42,7 +43,7 @@ function nextTurn(){
           // Is the spot available?
           if (board[i][j] == '') {
             board[i][j] = player1;
-            let score = minimax(board, 0, false);
+            let score = minimax(board, 0, -Infinity, Infinity, false);
             board[i][j] = '';
             if (score > bestScore) {
               bestScore = score;
@@ -51,25 +52,24 @@ function nextTurn(){
           }
         }
       }
-
+      let bestScoreP = createP('');
+      bestScoreP.style('font-size', '32pt');
+      bestScoreP.html(bestScore);
       board[move.i][move.j] = player1;
       currentPlayer = player2;
       turn++;
 
     }
     else{
-      let index =null;
-    while(available[index] == null){
-      index =  floor(random(available.length));
-      if((available.every(element => element === null))){
-         break;
-         }
-    }
-    let spot = available[index];
-    let i = spot[0];
-    let j = spot[1];
-    board[i][j] = currentPlayer;
-    available[index] = null;
+      if(board[0][0]==''){
+        board[0][0] = player1;
+      }else if(board[0][3] ==''){
+        board[0][3] = player1;
+      }else if(board[3][3] ==''){
+        board[3][3] = player1;
+      }else if(board[3][0] ==''){
+        board[3][0] = player1;
+      }
     currentPlayer = player2;
     }
   }
@@ -89,7 +89,7 @@ let scores = {
   tie: 0
 };
 
-function minimax(board, depth, isMaximizing) {
+function minimax(board, depth, alpha, beta, isMaximizing) {
 
   let result = checkWinner();
   if (result !== null) {
@@ -103,9 +103,13 @@ function minimax(board, depth, isMaximizing) {
         // Is the spot available?
         if (board[i][j] == '') {
           board[i][j] = player1;
-          let score = minimax(board, depth + 1, false);
+          let score = minimax(board, depth + 1, alpha, beta, false);
           board[i][j] = '';
           bestScore = max(score, bestScore);
+          alpha = max(alpha, bestScore);
+          if(beta <= alpha){
+            break;
+          }
         }
       }
     }
@@ -117,9 +121,13 @@ function minimax(board, depth, isMaximizing) {
         // Is the spot available?
         if (board[i][j] == '') {
           board[i][j] = player2;
-          let score = minimax(board, depth + 1, true);
+          let score = minimax(board, depth + 1, alpha, beta, true);
           board[i][j] = '';
           bestScore = min(score, bestScore);
+          beta = min(beta, bestScore);
+          if(beta<=alpha){
+            break;
+          }
         }
       }
     }
@@ -249,15 +257,16 @@ function draw() {
   let res = checkWinner();
   if(res != null){
     noLoop()
+    let resultP = createP('');
+    resultP.style('font-size', '32pt');
     if (res == 'tie') {
-      document.getElementById("Winner").innerHTML = "It's a tie!";
+      resultP.html("Tie!")
     } else {
-       document.getElementById("Winner").innerHTML = res+" won!";
+      resultP.html(`${res} wins!`);
     }
   }
   
 }
-
 
 
 		</script>
