@@ -126,6 +126,7 @@ function minimax(board, depth, alpha, beta, isMaximizing) {
 function mouseClicked(){
   x_pos = mouseX;
   y_pos = mouseY;
+if(currentPlayer == player2){
   click = [floor(y_pos/150), floor(x_pos/150), "O"];
   let k = floor(x_pos/150);
     let l = floor(y_pos/150);
@@ -136,7 +137,7 @@ function mouseClicked(){
     console.log(turn);
   //nextTurn();
 }
-
+}
 function checkWinner(){
   let winner = null;
   
@@ -249,6 +250,9 @@ function draw() {
       
     }
   }
+  let res = checkWinner();
+
+console.log("still running");
 var see;
             var totalClicks = database.ref('number').once('value').then(function(snapshot) {
                 see = snapshot.val();
@@ -259,22 +263,27 @@ var see;
 			//nextTurn();
 		}
                 console.log(click);
+
                 database.ref().child("shep").set(click);
+		
                 document.getElementById("num").innerHTML = see;	
 		
             });
-  let res = checkWinner();
+
+  
+
   if(res != null){
     noLoop()
+    database.ref().child("shep").set([-1,-1,'O']);
+    database.ref().child("number").set([-1,-1,'X']);
+    console.log("changed");
     if (res == 'tie') {
-      database.ref().child("number").set([-1,-1,'O']);
       document.getElementById("Winner").innerHTML = "It's a tie!";
     } else {
-      database.ref().child("number").set([-1,-1,'O']);
+
       document.getElementById("Winner").innerHTML = res+" won!";
     }
   }
-  
 }
 
 
@@ -290,9 +299,7 @@ var see;
         </script>
 
         <div style="text-align: center;">
-            <button onClick="onClick()">Click</button>
-            <p class="text">Clicks: <a id="num">-</a></p>
-            <p class="text">Clicks: <a id="s">-</a></p>
+            <p class="text">Previous Move: <a id="num">-</a></p>
         </div>
 <h1>TicTacNo</h1>
     <div id="sketch-div"></div>
