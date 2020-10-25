@@ -126,6 +126,7 @@ function minimax(board, depth, alpha, beta, isMaximizing) {
 function mouseClicked(){
   x_pos = mouseX;
   y_pos = mouseY;
+if(currentPlayer==player1){
   click = [floor(y_pos/150), floor(x_pos/150), "X"];
   let k = floor(x_pos/150);
     let l = floor(y_pos/150);
@@ -135,7 +136,7 @@ function mouseClicked(){
     turn++;
     console.log(turn);
   //nextTurn();
-
+}
 }
 
 function checkWinner(){
@@ -251,32 +252,38 @@ function draw() {
     }
   }
 
+  let res = checkWinner();
+  if(res != null){
+    noLoop()
+    database.ref().child("shep").set([-1,-1,'O']);
+    database.ref().child("number").set([-1,-1,'X']);
+    console.log("changed");
+    if (res == 'tie') {
+      document.getElementById("Winner").innerHTML = "It's a tie!";
+    } else {
+
+      document.getElementById("Winner").innerHTML = res+" won!";
+    }
+  }
+if(res==null){
+
 var see;
             var totalClicks = database.ref('shep').once('value').then(function(snapshot) {
                 see = snapshot.val();
-		
-                console.log(click);
+		console.log(click);
                 database.ref().child("number").set(click);
                 document.getElementById("num").innerHTML = see;
+            
 		if(board[see[0]][see[1]] !='O'&&see[0]!=-1&&currentPlayer == player2){
 			board[see[0]][see[1]] = 'O';
 			currentPlayer = player1;
 			turn++;
 			//nextTurn();
 		}
+		
             });
-  let res = checkWinner();
-  if(res != null){
-    noLoop()
-    database.ref().child("number").set([-1,-1,'O']);
-    if (res == 'tie') {
-      document.getElementById("Winner").innerHTML = "It's a tie!";
-    } else {
-      database.ref().child("number").set([-1,-1,'O']);
-      document.getElementById("Winner").innerHTML = res+" won!";
-    }
-  }
   
+  }
 }
 
 
@@ -292,9 +299,7 @@ var see;
         </script>
 
         <div style="text-align: center;">
-            <button onClick="onClick()">Click</button>
-            <p class="text">Clicks: <a id="num">-</a></p>
-            <p class="text">Clicks: <a id="s">-</a></p>
+            <p class="text">Previous Move: <a id="num">-</a></p>
         </div>
 <h1>TicTacNo</h1>
     <div id="sketch-div"></div>
